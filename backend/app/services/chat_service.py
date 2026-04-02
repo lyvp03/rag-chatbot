@@ -58,14 +58,15 @@ class ChatService:
                 return
 
             # Step 2: Build context string and source references
+            
             context_parts = []
             sources: list[SourceReference] = []
 
-            for doc, score in results:
+            for i, (doc, score) in enumerate(results):
                 meta = doc.metadata
                 context_parts.append(
-                    f"[Source: {meta.get('filename', 'unknown')} | "
-                    f"Chunk {meta.get('chunk_index', 0)}]\n{doc.page_content}"
+                    f"[{i+1}] {meta.get('filename', 'unknown')} | Chunk {meta.get('chunk_index', 0)}\n"
+                    f"{doc.page_content}"
                 )
                 sources.append(SourceReference(
                     filename=meta.get("filename", "unknown"),
@@ -75,14 +76,12 @@ class ChatService:
                     relevance_score=round(float(score), 4),
                 ))
 
-            context = "\n\n---\n\n".join(context_parts)
-
             # Step 3: Send source references
             sources_json = json.dumps(
                 [s.model_dump() for s in sources], ensure_ascii=False
             )
             yield self._sse("sources", sources_json)
-
+            context = "\n\n---\n\n".join(context_parts) 
             # Step 4: Stream LLM response
             async for token in self.chain.astream(
                 {"context": context, "question": message}

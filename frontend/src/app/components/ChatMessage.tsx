@@ -13,9 +13,11 @@ interface ChatMessageProps {
     onTypingComplete?: () => void;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function formatMessage(content: string): string {
     let formatted = content;
-    formatted = formatted.replace(/\s{2,}(\d{1,2}[\)\.]\s+[A-Za-zÀ-ỹ])/g, '\n\n$1');
+    formatted = formatted.replace(/\s{2,}(\d{1,2}[\)\.}]\s+[A-Za-zÀ-ỹ])/g, '\n\n$1');
     formatted = formatted.replace(/\s{2,}(-\s+[A-Za-zÀ-ỹ])/g, '\n  $1');
     formatted = formatted.replace(/^(\d{1,2})\)/gm, '$1.');
     formatted = formatted.replace(/\n(\d{1,2})\)/g, '\n$1.');
@@ -36,6 +38,212 @@ function fileTypeLabel(type: string) {
 
 function cleanFilename(filename: string) {
     return filename.replace(/^[a-f0-9-]+_/, '');
+}
+
+// ─── Parse Citations ──────────────────────────────────────────────────────────
+
+interface TextSegment {
+    type: 'text' | 'citation';
+    content: string;
+    indices?: number[];
+}
+
+function parseCitations(text: string): TextSegment[] {
+    const segments: TextSegment[] = [];
+    // Match [1], [2], [1][2], [1][2][3]...
+    const regex = /(\[\d+\])+/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        // Text trước citation
+        if (match.index > lastIndex) {
+            segments.push({
+                type: 'text',
+                content: text.slice(lastIndex, match.index),
+            });
+        }
+
+        // Parse [1][2] → [0, 1] (0-indexed)
+        const nums = [...match[0].matchAll(/\[(\d+)\]/g)]
+            .map(m => parseInt(m[1]) - 1)
+            .filter(n => n >= 0);
+
+        segments.push({
+            type: 'citation',
+            content: match[0],
+            indices: nums,
+        });
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    // Text còn lại
+    if (lastIndex < text.length) {
+        segments.push({
+            type: 'text',
+            content: text.slice(lastIndex),
+        });
+    }
+
+    return segments;
+}
+
+// ─── Inline Citation ──────────────────────────────────────────────────────────
+
+interface InlineCitationProps {
+    indices: number[];
+    sources: SourceChunk[];
+}
+
+function InlineCitation({ indices, sources }: InlineCitationProps) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open]);
+
+    const validSources = indices.map(i => sources[i]).filter(Boolean);
+    if (!validSources.length) return null;
+
+    return (
+        <span ref={ref} className="relative inline-block align-middle mx-0.5">
+            {/* Badge number */}
+            <button
+                onClick={() => setOpen(v => !v)}
+                className={`inline-flex items-center justify-center
+                    w-4 h-4 rounded text-[10px] font-bold cursor-pointer
+                    transition-all border leading-none
+                    ${open
+                        ? 'bg-[var(--accent-color)] text-white border-[var(--accent-color)]'
+                        : 'bg-[var(--accent-color)]/15 text-[var(--accent-color)] border-[var(--accent-color)]/30 hover:bg-[var(--accent-color)]/30'
+                    }`}
+            >
+                {indices.map(i => i + 1).join(',')}
+            </button>
+
+            {/* Popup */}
+            {open && (
+                <span className="absolute bottom-full left-0 mb-2 z-50 block w-72
+                    bg-[var(--bg-secondary)] border border-[var(--input-border)]
+                    rounded-xl shadow-xl overflow-hidden"
+                >
+                    {validSources.map((src, i) => (
+                        <span key={i} className="block">
+                            {/* Divider between multiple sources */}
+                            {i > 0 && (
+                                <span className="block border-t border-[var(--input-border)]" />
+                            )}
+
+                            {/* Header */}
+                            <span className="flex items-center gap-2 px-3 py-2
+                                bg-[var(--input-bg)] border-b border-[var(--input-border)]"
+                            >
+                                <span className="text-[10px] font-bold px-1.5 py-0.5
+                                    rounded bg-[var(--accent-color)]/20 text-[var(--accent-color)]"
+                                >
+                                    {fileTypeLabel(src.file_type)}
+                                </span>
+                                <span className="text-xs font-medium text-[var(--text-primary)] truncate flex-1">
+                                    {cleanFilename(src.filename)}
+                                </span>
+                                <span className="text-[10px] text-[var(--text-secondary)] shrink-0">
+                                    chunk #{src.chunk_index}
+                                </span>
+                            </span>
+
+                            {/* Relevance bar */}
+                            <span className="flex items-center gap-2 px-3 pt-2 pb-1">
+                                <span className="text-[10px] text-[var(--text-secondary)]">
+                                    Độ liên quan
+                                </span>
+                                <span className="flex-1 h-1 rounded-full bg-[var(--input-border)] overflow-hidden">
+                                    <span
+                                        className="block h-full rounded-full bg-[var(--accent-color)]"
+                                        style={{ width: `${Math.round(src.relevance_score * 100)}%` }}
+                                    />
+                                </span>
+                                <span className="text-[10px] font-medium text-[var(--accent-color)]">
+                                    {formatScore(src.relevance_score)}
+                                </span>
+                            </span>
+
+                            {/* Content preview */}
+                            <span className="block px-3 pb-3">
+                                <span className="text-xs text-[var(--text-secondary)]
+                                    leading-relaxed line-clamp-4 whitespace-pre-wrap block"
+                                >
+                                    {src.content_preview}
+                                </span>
+                            </span>
+                        </span>
+                    ))}
+                </span>
+            )}
+        </span>
+    );
+}
+
+// ─── Message Content (Markdown + Inline Citations) ────────────────────────────
+
+interface MessageContentProps {
+    content: string;
+    sources?: SourceChunk[];
+    showCursor?: boolean;
+}
+
+function MessageContent({ content, sources, showCursor }: MessageContentProps) {
+    const segments = parseCitations(content);
+    const hasCitations = segments.some(s => s.type === 'citation');
+
+    // Nếu không có citations → render ReactMarkdown bình thường
+    if (!hasCitations || !sources?.length) {
+        return (
+            <div className={`prose prose-sm max-w-none text-[var(--text-primary)]
+                prose-strong:text-[var(--text-primary)] prose-strong:font-semibold
+                ${showCursor ? 'typing-cursor' : ''}`}
+            >
+                <ReactMarkdown>{content}</ReactMarkdown>
+            </div>
+        );
+    }
+
+    // Có citations → render từng segment
+    return (
+        <div className={`prose prose-sm max-w-none text-[var(--text-primary)]
+            prose-strong:text-[var(--text-primary)] prose-strong:font-semibold
+            ${showCursor ? 'typing-cursor' : ''}`}
+        >
+            {segments.map((seg, i) => {
+                if (seg.type === 'citation' && seg.indices?.length) {
+                    return (
+                        <InlineCitation
+                            key={i}
+                            indices={seg.indices}
+                            sources={sources}
+                        />
+                    );
+                }
+                // Text segment → ReactMarkdown
+                return (
+                    <ReactMarkdown key={i} components={{
+                        // Override p để không wrap thêm <p> tag gây layout lỗi
+                        p: ({ children }) => <span className="inline">{children}</span>,
+                    }}>
+                        {seg.content}
+                    </ReactMarkdown>
+                );
+            })}
+        </div>
+    );
 }
 
 // ─── Source Chip với popup ────────────────────────────────────────────────────
@@ -183,12 +391,11 @@ export function ChatMessage({
                     </p>
                 ) : (
                     <>
-                        <div className={`prose prose-sm max-w-none text-[var(--text-primary)]
-                            prose-strong:text-[var(--text-primary)] prose-strong:font-semibold
-                            ${showCursor ? 'typing-cursor' : ''}`}
-                        >
-                            <ReactMarkdown>{formatMessage(contentWithCursor)}</ReactMarkdown>
-                        </div>
+                        <MessageContent
+                            content={formatMessage(contentWithCursor)}
+                            sources={message.sources}
+                            showCursor={showCursor}
+                        />
                         {!isStreaming && <SourceList sources={message.sources} />}
                     </>
                 )}
