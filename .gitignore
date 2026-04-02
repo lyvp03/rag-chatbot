@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Environment (QUAN TRỌNG - không push API key)
+.env
+*.env
+
+# FAISS data
+backend/faiss_data/
+
+# Uploads
+backend/uploads/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+
+# Chonkie / HuggingFace cache
+*.cache/
