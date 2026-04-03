@@ -5,4 +5,4 @@ venv
 *.pyo
 .env
 uploads/
-faiss_data/
+chroma_data/

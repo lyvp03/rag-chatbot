@@ -9,7 +9,7 @@ Tài liệu này mô tả các API endpoints của Backend FastAPI để fronten
 ## 1. Trạng thái hệ thống (Health)
 
 ### 1.1. Health Check
-Kiểm tra xem server và database vector (FAISS) có đang hoạt động hay không.
+Kiểm tra xem server và database vector (ChromaDB) có đang hoạt động hay không.
 - **Phương thức:** `GET`
 - **Endpoint:** `/health`
 - **Response:** `200 OK`
@@ -17,7 +17,7 @@ Kiểm tra xem server và database vector (FAISS) có đang hoạt động hay k
 {
   "status": "healthy",
   "version": "1.0.0",
-  "vector_database_collection": "faiss_index",
+  "vector_database_collection": "rag_documents",
   "document_count": 125,
   "timestamp": "2026-04-02T13:40:00.000Z"
 }

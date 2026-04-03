@@ -9,7 +9,7 @@ This is a comprehensive Full-Stack RAG application that enables users to upload 
 - **Multi-Format Support**:
   - **Text**: Seamless processing of PDF, TXT, and Markdown (MD) files.
   - **Audio**: Integration with OpenAI Whisper for automated transcription of MP3, WAV, and M4A audio files.
-- **Vector Database**: Implements FAISS (Facebook AI Similarity Search) to ensure highly efficient storage, indexing, and semantic retrieval of embedded data.
+- **Vector Database**: Implements ChromaDB to ensure highly efficient storage, indexing, and semantic retrieval of embedded data.
 - **Streamlined Chat Experience**: Server-Sent Events (SSE) implementation to return responses as a continuous stream, delivering a ChatGPT-like interaction using OpenAI models.
 - **Dockerized Environment**: Fully containerized using Docker and Docker Compose, facilitating a seamless, single-command deployment process.
 
@@ -23,7 +23,7 @@ The repository is modularized into two distinct parent directories:
 rag-app/
 ├── backend/          # FastAPI server
 │   ├── app/          # Core source code
-│   ├── faiss_data/   # Persistent storage for Vector Database Index
+│   ├── chroma_data/   # Persistent storage for Vector Database Index
 │   ├── uploads/      # Persistent storage for user-uploaded files
 │   └── Dockerfile
 ├── frontend/         # Next.js web application
@@ -56,7 +56,7 @@ docker-compose up -d --build
 **3. Access the Dispatched Services**
 - **Frontend Application**: http://localhost:3000
 - **Backend API Documentation**: http://localhost:8000/docs
-- **Data Persistence**: FAISS indexing data and uploaded artifacts will securely persist within the `backend/faiss_data` and `backend/uploads` local directories.
+- **Data Persistence**: ChromaDB indexing data and uploaded artifacts will securely persist within the `backend/chroma_data` and `backend/uploads` local directories.
 
 ---
 

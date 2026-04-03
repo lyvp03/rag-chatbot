@@ -21,7 +21,7 @@ async def health_check(
     return HealthResponse(
         status="healthy",
         version="1.0.0",
-        vector_database_collection="faiss_index",   
+        vector_database_collection=stats["collection_name"],
         document_count=stats["total_chunks"],
         timestamp=datetime.now(timezone.utc).isoformat(),
     )

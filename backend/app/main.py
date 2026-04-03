@@ -26,15 +26,14 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
     logger.info("🚀 Starting RAG API server...")
-    logger.info(f"   Vector DB path: {settings.faiss_path}")
+    logger.info(f"   Vector DB path: {settings.chroma_path}")
     logger.info(f"   Upload dir:    {settings.upload_path}")
     logger.info(f"   LLM model:     {settings.LLM_MODEL}")
     logger.info(f"   Embedding:     {settings.EMBEDDING_MODEL}")
 
     # Ensure directories exist
     settings.upload_path.mkdir(parents=True, exist_ok=True)
-    settings.faiss_path.mkdir(parents=True, exist_ok=True)
-
+ 
     yield
 
     logger.info("🛑 Shutting down RAG API server...")

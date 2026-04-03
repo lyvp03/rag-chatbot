@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     EMBEDDING_API_KEY: str
     EMBEDDING_API_URL: str
 
-    # ===== Vector DB (FAISS) =====
-    FAISS_PERSIST_DIR: str = "./faiss_data"
+    # ===== Vector DB (ChromaDB) =====
+    CHROMA_PERSIST_DIR: str = "./chroma_data"
 
     # ===== File Upload =====
     UPLOAD_DIR: str = "./uploads"
@@ -44,8 +44,8 @@ class Settings(BaseSettings):
         return path
 
     @property
-    def faiss_path(self) -> Path:
-        path = Path(self.FAISS_PERSIST_DIR)
+    def chroma_path(self) -> Path:
+        path = Path(self.CHROMA_PERSIST_DIR)
         path.mkdir(parents=True, exist_ok=True)
         return path
 

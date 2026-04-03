@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# System dependencies (ffmpeg cho Whisper, gcc cho faiss)
+# System dependencies (ffmpeg cho Whisper)
 RUN apt-get update && apt-get install -y \
     gcc \
     ffmpeg \
