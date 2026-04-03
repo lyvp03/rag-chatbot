@@ -23,3 +23,7 @@ pydantic-settings==2.9.1
 # Utilities
 python-dotenv==1.1.0
 aiofiles==24.1.0
+
+chardet==5.2.0
+
+

@@ -5,7 +5,7 @@ __pycache__/
 .venv/
 *.egg-info/
 
-# Environment (QUAN TRỌNG - không push API key)
+# Environment  
 .env
 *.env
 
@@ -22,3 +22,7 @@ frontend/.env.local
 
 # Chonkie / HuggingFace cache
 *.cache/
+
+
+# Docker
+*.log

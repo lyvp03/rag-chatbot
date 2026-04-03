@@ -1,36 +1,44 @@
-export interface NewsItem {
-  id: number;
-  type: string;
-  guid: string;
-  url: string;
-  publishedOn: number;
-  imageUrl: string;
-  title: string;
-  subtitle: string;
-  authors: string;
-  sourceId: string;
-  rawBody: string;
-  keywords: string;
-  sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
-  sourceName: string;
-  categories: string;
-  htmlBody: string;
+// ─── Types ────────────────────────────────────────────────────────────────────
+ 
+export type DocumentStatus = "pending" | "processing" | "completed" | "failed";
+ 
+export interface DocumentItem {
+  id: string;
+  filename: string;
+  file_type: string;
+  file_size_bytes: number;
+  status: DocumentStatus;
+  chunk_count: number;
+  uploaded_at: string;
+  error_message: string | null;
 }
-
-export interface NewsResponse {
-  data: NewsItem[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export interface ChatRequest {
+ 
+export interface UploadResponse {
+  id: string;
+  filename: string;
+  status: DocumentStatus;
   message: string;
 }
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
+ 
+export interface HealthResponse {
+  status: string;
+  version: string;
+  vector_database_collection: string;
+  document_count: number;
+  timestamp: string;
+}
+ 
+export interface SourceChunk {
+  filename: string;
+  file_type: string;
+  chunk_index: number;
+  content_preview: string;
+  relevance_score: number;
+}
+ 
+export interface ChatStreamCallbacks {
+  onSources?: (sources: SourceChunk[]) => void;
+  onToken?: (token: string) => void;
+  onDone?: () => void;
+  onError?: (error: string) => void;
 }
