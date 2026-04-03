@@ -179,7 +179,7 @@ function InlineCitation({ indices, sources }: InlineCitationProps) {
                             {/* Content preview */}
                             <span className="block px-3 pb-3">
                                 <span className="text-xs text-[var(--text-secondary)]
-                                    leading-relaxed line-clamp-4 whitespace-pre-wrap block"
+                                    leading-relaxed line-clamp-4"
                                 >
                                     {src.content_preview}
                                 </span>
@@ -319,7 +319,7 @@ function SourceChip({ src, index }: { src: SourceChunk; index: number }) {
 
                     {/* Preview */}
                     <div className="px-3 pb-3">
-                        <p className="text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-5 whitespace-pre-wrap">
+                        <p className="text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-5">
                             {src.content_preview}
                         </p>
                     </div>

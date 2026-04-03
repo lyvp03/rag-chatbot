@@ -107,7 +107,7 @@ export function InlineCitation({ indices, sources }: InlineCitationProps) {
                             {/* Preview */}
                             <span className="block px-3 pb-3">
                                 <span className="text-xs text-[var(--text-secondary)]
-                                    leading-relaxed line-clamp-4 whitespace-pre-wrap block"
+                                    leading-relaxed line-clamp-4"
                                 >
                                     {src.content_preview}
                                 </span>
